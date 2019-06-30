@@ -1,4 +1,4 @@
-# GITS - Multi repo tools
+# GITS - Multi repo tool
 
 ## installation
 
