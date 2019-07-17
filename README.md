@@ -2,9 +2,18 @@
 
 ## installation
 
-install go
-launch go install a the root
+TODO
 
 ## usage
 
-Execute gits status
+### gits status
+
+Get all warnings related to each git repositories
+
+### gits pull
+
+Pull current branch of each git repositories
+
+**options**
+-all
+Pull all branches of each git repositories
