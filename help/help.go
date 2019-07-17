@@ -11,7 +11,8 @@ func DisplayHelp() {
 	fmt.Println()
 	fmt.Println("The commands are :")
 	fmt.Println()
-	fmt.Println("        status       get all warnings related to each git repositories")
-	fmt.Println("        pull         pull all branches of each git repositories")
-	fmt.Println("        poule        display a chicken")
+	fmt.Println("        status              get all warnings related to each git repositories")
+	fmt.Println("        pull                pull all branches of each git repositories")
+	fmt.Println("        pull -fetch=false   pull all branches of each git repositories without fetch (fast)")
+	fmt.Println("        poule               display a chicken")
 }

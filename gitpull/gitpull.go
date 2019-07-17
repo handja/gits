@@ -7,23 +7,36 @@ import (
 	"github.com/handja/gits/gitutil"
 )
 
-func PullAllBranchesWithoutFetch() {
-
-}
-
-func PullAllBranches(gitDirectories []os.FileInfo, wg *sync.WaitGroup) {
+func PullAllBranchesWithoutFetch(gitDirectories []os.FileInfo, wg *sync.WaitGroup) {
 	for _, gitDirectory := range gitDirectories {
-		go pullOnRepository(gitDirectory, wg)
+		go pullOnRepositoryWithoutFetch(gitDirectory, wg)
 	}
 	wg.Wait()
 }
 
-func pullOnRepository(gitDirectory os.FileInfo, wg *sync.WaitGroup) {
+func PullAllBranches(gitDirectories []os.FileInfo, wg *sync.WaitGroup) {
+	for _, gitDirectory := range gitDirectories {
+		go pullOnRepositoryWithFetch(gitDirectory, wg)
+	}
+	wg.Wait()
+}
+
+func pullOnRepositoryWithFetch(gitDirectory os.FileInfo, wg *sync.WaitGroup) {
+	pullOnRepository(gitDirectory, wg, true)
+}
+
+func pullOnRepositoryWithoutFetch(gitDirectory os.FileInfo, wg *sync.WaitGroup) {
+	pullOnRepository(gitDirectory, wg, false)
+}
+
+func pullOnRepository(gitDirectory os.FileInfo, wg *sync.WaitGroup, withFetch bool) {
 	defer wg.Done()
 	isCurrentBranchWorkingInProgress := gitutil.IsFilesNotStagedOrCommitedOnCurrentBranch(gitDirectory.Name())
 	directoryName := gitDirectory.Name()
 	if !isCurrentBranchWorkingInProgress {
-		gitutil.FetchAllBranches(directoryName)
+		if withFetch {
+			gitutil.FetchAllBranches(directoryName)
+		}
 		_, notUptodateBranches, _, _ := gitutil.GetUnpushedBranches(directoryName)
 		currentBranch := gitutil.GetCurrentBranch(directoryName)
 		if len(notUptodateBranches) > 0 {

@@ -27,7 +27,7 @@ func main() {
 		pullCmd.Parse(os.Args[2:])
 		isWithoutFetch := !*pullFetch
 		if isWithoutFetch {
-			gitpull.PullAllBranchesWithoutFetch()
+			executeAsynchronousGitsCommand(PULL_WITHOUT_FETCH)
 		} else if len(os.Args) > 2 {
 			fmt.Println("expected '-fetch' subcommands or nothing")
 			os.Exit(1)
@@ -61,6 +61,8 @@ func executeAsynchronousGitsCommand(gitsCommandType GitsCommandType) {
 		gitstatus.Status(gitDirectories, &wg)
 	case PULL:
 		gitpull.PullAllBranches(gitDirectories, &wg)
+	case PULL_WITHOUT_FETCH:
+		gitpull.PullAllBranchesWithoutFetch(gitDirectories, &wg)
 	}
 	color.Green("Done")
 	fmt.Println("Press Enter to exit...")
@@ -72,13 +74,13 @@ type GitsCommandType int
 const (
 	STATUS = iota
 	PULL
+	PULL_WITHOUT_FETCH
 )
 
 func (g GitsCommandType) String() string {
-	return [...]string{"STATUS", "PULL"}[g]
+	return [...]string{"STATUS", "PULL", "PULL_WITHOUT_FETCH"}[g]
 }
 
 // git pull on a specified branch
 // add verbose option to display all directories
-// pull without fetching
 // switch to a specific branch
