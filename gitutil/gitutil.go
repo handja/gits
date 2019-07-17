@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/fatih/color"
 )
 
 func GetGitRepos() []os.FileInfo {
@@ -41,7 +43,9 @@ func ExecuteGitCommand(directoryName string, args ...string) []byte {
 	cmd.Dir = "./" + directoryName
 	out, err := cmd.Output()
 	if err != nil {
-		log.Print(" ERROR - " + directoryName + " : " + string(out))
+		red := color.New(color.FgRed).SprintFunc()
+		log.Println()
+		log.Printf("%s - %s : %s", red("Error"), directoryName, string(out))
 		log.Fatal(err)
 	}
 	return out

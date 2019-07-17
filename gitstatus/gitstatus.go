@@ -2,6 +2,7 @@ package gitstatus
 
 import (
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 	"sync"
@@ -21,26 +22,35 @@ type Repository struct {
 	NotUptodateBranches  []string
 }
 
-func Status() {
-	fmt.Printf("Waiting ...")
-	gitDirectories := gitutil.GetGitRepos()
-	if len(gitDirectories) == 0 {
-		fmt.Println("\rNo git directories")
-		return
-	}
-	var wg sync.WaitGroup
-	wg.Add(len(gitDirectories))
+func Status(gitDirectories []os.FileInfo, wg *sync.WaitGroup) {
 	var repositories []Repository
 	for _, gitDirectory := range gitDirectories {
-		go addGitRepositoryData(gitDirectory.Name(), &repositories, &wg)
+		go addGitRepositoryData(gitDirectory.Name(), &repositories, wg)
 	}
 	wg.Wait()
 	sort.SliceStable(repositories, func(i, j int) bool { return repositories[i].Name < repositories[j].Name })
 	displayGitRepositoryWarning(repositories)
 	fmt.Println()
-	color.Green("Done")
-	fmt.Println("Press Enter to exit...")
-	fmt.Scanln()
+}
+
+func addGitRepositoryData(directoryName string, repositories *[]Repository, wg *sync.WaitGroup) {
+	defer wg.Done()
+	var repository = Repository{Name: directoryName}
+	gitutil.FetchAllBranches(directoryName)
+	unpushedBranches, notUptodateBranches, aheadBranches, isGitFlow := gitutil.GetUnpushedBranches(directoryName)
+	currentBranch := gitutil.GetCurrentBranch(directoryName)
+	isOnDevelopBranch := (strings.Contains(currentBranch, "develop") && isGitFlow) || (strings.Contains(currentBranch, "master") && !isGitFlow)
+	isCurrentBranchWorkingInProgress := gitutil.IsFilesNotStagedOrCommitedOnCurrentBranch(directoryName)
+	if len(unpushedBranches) > 0 || !isOnDevelopBranch || len(notUptodateBranches) > 0 || len(aheadBranches) > 0 || isCurrentBranchWorkingInProgress {
+		repository.HasWarning = true
+		repository.CurrentBranch = currentBranch
+		repository.IsNotOnDevelopBranch = !isOnDevelopBranch
+		repository.IsWorkingInProgress = isCurrentBranchWorkingInProgress
+		repository.AheadBranches = aheadBranches
+		repository.UnpushedBranches = unpushedBranches
+		repository.NotUptodateBranches = notUptodateBranches
+	}
+	*repositories = append(*repositories, repository)
 }
 
 func displayGitRepositoryWarning(repositories []Repository) {
@@ -80,24 +90,4 @@ func displayGitRepositoryWarning(repositories []Repository) {
 	if isNoWarnings {
 		fmt.Printf("\rNothing to report.")
 	}
-}
-
-func addGitRepositoryData(directoryName string, repositories *[]Repository, wg *sync.WaitGroup) {
-	defer wg.Done()
-	var repository = Repository{Name: directoryName}
-	gitutil.FetchAllBranches(directoryName)
-	unpushedBranches, notUptodateBranches, aheadBranches, isGitFlow := gitutil.GetUnpushedBranches(directoryName)
-	currentBranch := gitutil.GetCurrentBranch(directoryName)
-	isOnDevelopBranch := (strings.Contains(currentBranch, "develop") && isGitFlow) || (strings.Contains(currentBranch, "master") && !isGitFlow)
-	isCurrentBranchWorkingInProgress := gitutil.IsFilesNotStagedOrCommitedOnCurrentBranch(directoryName)
-	if len(unpushedBranches) > 0 || !isOnDevelopBranch || len(notUptodateBranches) > 0 || len(aheadBranches) > 0 || isCurrentBranchWorkingInProgress {
-		repository.HasWarning = true
-		repository.CurrentBranch = currentBranch
-		repository.IsNotOnDevelopBranch = !isOnDevelopBranch
-		repository.IsWorkingInProgress = isCurrentBranchWorkingInProgress
-		repository.AheadBranches = aheadBranches
-		repository.UnpushedBranches = unpushedBranches
-		repository.NotUptodateBranches = notUptodateBranches
-	}
-	*repositories = append(*repositories, repository)
 }

@@ -1,51 +1,47 @@
 package gitpull
 
 import (
-	"fmt"
+	"os"
+	"sync"
 
-	"github.com/fatih/color"
 	"github.com/handja/gits/gitutil"
 )
 
-func Pull() {
-	fmt.Printf("Waiting ...")
-	gitDirectories := gitutil.GetGitRepos()
-	if len(gitDirectories) == 0 {
-		fmt.Println("\rNo git directories")
-		return
-	}
-	for _, gitDirectory := range gitDirectories {
-		pullGitRepository(gitDirectory.Name())
-	}
-	fmt.Printf("\r\n")
-	color.Green("Done")
+func PullAllBranchesWithoutFetch() {
+
 }
 
-func PullAllBranches() {
-	fmt.Printf("Waiting ...")
-	gitDirectories := gitutil.GetGitRepos()
-	if len(gitDirectories) == 0 {
-		fmt.Println("\rNo git directories")
-		return
-	}
+func PullAllBranches(gitDirectories []os.FileInfo, wg *sync.WaitGroup) {
 	for _, gitDirectory := range gitDirectories {
-		isCurrentBranchWorkingInProgress := gitutil.IsFilesNotStagedOrCommitedOnCurrentBranch(gitDirectory.Name())
-		directoryName := gitDirectory.Name()
-		if !isCurrentBranchWorkingInProgress {
-			gitutil.FetchAllBranches(directoryName)
-			_, notUptodateBranches, _, _ := gitutil.GetUnpushedBranches(directoryName)
-			currentBranch := gitutil.GetCurrentBranch(directoryName)
-			if len(notUptodateBranches) > 0 {
-				for _, notUptodateBranch := range notUptodateBranches {
-					gitutil.ExecuteGitCommand(directoryName, "checkout", notUptodateBranch)
-					pullGitRepository(gitDirectory.Name())
-				}
-				gitutil.ExecuteGitCommand(directoryName, "checkout", currentBranch)
+		go pullOnRepository(gitDirectory, wg)
+	}
+	wg.Wait()
+}
+
+func pullOnRepository(gitDirectory os.FileInfo, wg *sync.WaitGroup) {
+	defer wg.Done()
+	isCurrentBranchWorkingInProgress := gitutil.IsFilesNotStagedOrCommitedOnCurrentBranch(gitDirectory.Name())
+	directoryName := gitDirectory.Name()
+	if !isCurrentBranchWorkingInProgress {
+		gitutil.FetchAllBranches(directoryName)
+		_, notUptodateBranches, _, _ := gitutil.GetUnpushedBranches(directoryName)
+		currentBranch := gitutil.GetCurrentBranch(directoryName)
+		if len(notUptodateBranches) > 0 {
+			for _, notUptodateBranch := range notUptodateBranches {
+				pullOnBranch(directoryName, notUptodateBranch)
 			}
+			gitutil.ExecuteGitCommand(directoryName, "checkout", currentBranch)
 		}
 	}
-	fmt.Printf("\r\n")
-	color.Green("Done")
+}
+
+func pullOnBranch(directoryName string, branchName string) {
+	checkoutBranch(directoryName, branchName)
+	pullGitRepository(directoryName)
+}
+
+func checkoutBranch(directoryName string, branchName string) {
+	gitutil.ExecuteGitCommand(directoryName, "checkout", branchName)
 }
 
 func pullGitRepository(directoryName string) {

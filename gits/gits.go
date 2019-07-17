@@ -4,10 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sync"
 
+	"github.com/fatih/color"
 	"github.com/handja/gits/gitmessage"
 	"github.com/handja/gits/gitpull"
 	"github.com/handja/gits/gitstatus"
+	"github.com/handja/gits/gitutil"
+	"github.com/handja/gits/help"
 )
 
 func main() {
@@ -16,21 +20,24 @@ func main() {
 		os.Exit(1)
 	}
 	pullCmd := flag.NewFlagSet("pull", flag.ExitOnError)
-	pullAll := pullCmd.Bool("all", false, "pull on all branches")
+	pullFetch := pullCmd.Bool("fetch", true, "fetch before pull")
 
 	switch os.Args[1] {
 	case "pull":
 		pullCmd.Parse(os.Args[2:])
-		if *pullAll {
-			gitpull.PullAllBranches()
+		isWithoutFetch := !*pullFetch
+		if isWithoutFetch {
+			gitpull.PullAllBranchesWithoutFetch()
 		} else if len(os.Args) > 2 {
-			fmt.Println("expected '-all' subcommands or nothing")
+			fmt.Println("expected '-fetch' subcommands or nothing")
 			os.Exit(1)
 		} else {
-			gitpull.Pull()
+			executeAsynchronousGitsCommand(PULL)
 		}
 	case "status":
-		gitstatus.Status()
+		executeAsynchronousGitsCommand(STATUS)
+	case "help":
+		help.DisplayHelp()
 	case "poule":
 		fmt.Println()
 		gitmessage.DisplayPocpocMessage()
@@ -40,11 +47,38 @@ func main() {
 	}
 }
 
-// add argument for the path
-// display the current branch commit and stage
-// git pull on each branch (master and develop)
+func executeAsynchronousGitsCommand(gitsCommandType GitsCommandType) {
+	fmt.Printf("Waiting ...")
+	gitDirectories := gitutil.GetGitRepos()
+	if len(gitDirectories) == 0 {
+		fmt.Println("\rNo git directories")
+		os.Exit(1)
+	}
+	var wg sync.WaitGroup
+	wg.Add(len(gitDirectories))
+	switch gitsCommandType {
+	case STATUS:
+		gitstatus.Status(gitDirectories, &wg)
+	case PULL:
+		gitpull.PullAllBranches(gitDirectories, &wg)
+	}
+	color.Green("Done")
+	fmt.Println("Press Enter to exit...")
+	fmt.Scanln()
+}
+
+type GitsCommandType int
+
+const (
+	STATUS = iota
+	PULL
+)
+
+func (g GitsCommandType) String() string {
+	return [...]string{"STATUS", "PULL"}[g]
+}
+
 // git pull on a specified branch
 // add verbose option to display all directories
-// sort result
-
-// "Already up to date." message for git pull if nothing happens
+// pull without fetching
+// switch to a specific branch
