@@ -3,7 +3,7 @@ package help
 import "fmt"
 
 func DisplayHelp() {
-	fmt.Println("Gits is a tool to manage git multi repositories.")
+	fmt.Println("Gits is a tool to manage multi git repositories.")
 	fmt.Println()
 	fmt.Println("Usage:")
 	fmt.Println()
@@ -11,8 +11,8 @@ func DisplayHelp() {
 	fmt.Println()
 	fmt.Println("The commands are :")
 	fmt.Println()
-	fmt.Println("        status              get all warnings related to each git repositories")
-	fmt.Println("        pull                pull all branches of each git repositories")
-	fmt.Println("        pull -fetch=false   pull all branches of each git repositories without fetch (fast)")
+	fmt.Println("        status              get all warnings related to each git repositorie")
+	fmt.Println("        pull                pull all branches of each git repositorie")
+	fmt.Println("        pull -fetch=false   pull all branches of each git repositorie without fetch (faster)")
 	fmt.Println("        poule               display a chicken")
 }

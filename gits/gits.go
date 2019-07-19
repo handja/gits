@@ -16,7 +16,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("expected 'pull' or 'status' subcommands")
+		fmt.Println("expected 'pull', 'status' or 'help' subcommands")
 		os.Exit(1)
 	}
 	pullCmd := flag.NewFlagSet("pull", flag.ExitOnError)
@@ -42,7 +42,7 @@ func main() {
 		fmt.Println()
 		gitmessage.DisplayPocpocMessage()
 	default:
-		fmt.Println("expected 'pull' or 'status' subcommands")
+		fmt.Println("Run 'gits help' for usage.")
 		os.Exit(1)
 	}
 }
