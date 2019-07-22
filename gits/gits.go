@@ -48,7 +48,7 @@ func main() {
 }
 
 func executeAsynchronousGitsCommand(gitsCommandType GitsCommandType) {
-	fmt.Printf("Waiting ...")
+	fmt.Println("Waiting ...")
 	gitDirectories := gitutil.GetGitRepos()
 	if len(gitDirectories) == 0 {
 		fmt.Println("\rNo git directories")

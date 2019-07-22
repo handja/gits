@@ -44,8 +44,7 @@ func ExecuteGitCommand(directoryName string, args ...string) []byte {
 	out, err := cmd.Output()
 	if err != nil {
 		red := color.New(color.FgRed).SprintFunc()
-		log.Println()
-		log.Printf("%s - %s : %s", red("Error"), directoryName, string(out))
+		log.Printf("%s - %s : %s, %s", red("Error"), directoryName, string(out), err)
 		log.Fatal(err)
 	}
 	return out
