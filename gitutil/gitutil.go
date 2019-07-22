@@ -38,7 +38,7 @@ func isGitRepo(directory os.FileInfo) bool {
 	return isGitRepo
 }
 
-func ExecuteGitCommand(directoryName string, args ...string) []byte, error {
+func ExecuteGitCommand(directoryName string, args ...string) ([]byte, error) {
 	cmd := exec.Command("git", args...)
 	cmd.Dir = "./" + directoryName
 	out, err := cmd.Output()
@@ -49,7 +49,7 @@ func ExecuteGitCommand(directoryName string, args ...string) []byte, error {
 		log.Fatal(err)
 		return nil, err
 	}
-	return out
+	return out, nil
 }
 
 func FetchAllBranches(directoryName string) {
