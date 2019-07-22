@@ -48,7 +48,7 @@ func main() {
 }
 
 func executeAsynchronousGitsCommand(gitsCommandType GitsCommandType) {
-	fmt.Printf("Waiting ...")
+	fmt.Println("Waiting ...")
 	gitDirectories := gitutil.GetGitRepos()
 	if len(gitDirectories) == 0 {
 		fmt.Println("\rNo git directories")
@@ -65,8 +65,6 @@ func executeAsynchronousGitsCommand(gitsCommandType GitsCommandType) {
 		gitpull.PullAllBranchesWithoutFetch(gitDirectories, &wg)
 	}
 	color.Green("Done")
-	fmt.Println("Press Enter to exit...")
-	fmt.Scanln()
 }
 
 type GitsCommandType int
@@ -84,3 +82,5 @@ func (g GitsCommandType) String() string {
 // git pull on a specified branch
 // add verbose option to display all directories
 // switch to a specific branch
+// limit the routine number
+// Add an option to avoid asynchronism
