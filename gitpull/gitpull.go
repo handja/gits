@@ -35,7 +35,9 @@ func pullOnRepository(gitDirectory os.FileInfo, wg *sync.WaitGroup, withFetch bo
 	directoryName := gitDirectory.Name()
 	if !isCurrentBranchWorkingInProgress {
 		if withFetch {
-			gitutil.FetchAllBranches(directoryName)
+			if err := gitutil.FetchAllBranches(directoryName); err != nil {
+				return
+			}
 		}
 		_, notUptodateBranches, _, _ := gitutil.GetUnpushedBranches(directoryName)
 		currentBranch := gitutil.GetCurrentBranch(directoryName)

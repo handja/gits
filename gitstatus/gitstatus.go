@@ -36,7 +36,9 @@ func Status(gitDirectories []os.FileInfo, wg *sync.WaitGroup) {
 func addGitRepositoryData(directoryName string, repositories *[]Repository, wg *sync.WaitGroup) {
 	defer wg.Done()
 	var repository = Repository{Name: directoryName}
-	gitutil.FetchAllBranches(directoryName)
+	if err := gitutil.FetchAllBranches(directoryName); err != nil {
+		return
+	}
 	unpushedBranches, notUptodateBranches, aheadBranches, isGitFlow := gitutil.GetUnpushedBranches(directoryName)
 	currentBranch := gitutil.GetCurrentBranch(directoryName)
 	isOnDevelopBranch := (strings.Contains(currentBranch, "develop") && isGitFlow) || (strings.Contains(currentBranch, "master") && !isGitFlow)
@@ -54,6 +56,7 @@ func addGitRepositoryData(directoryName string, repositories *[]Repository, wg *
 }
 
 func displayGitRepositoryWarning(repositories []Repository) {
+	fmt.Println()
 	isNoWarnings := true
 	yellow := color.New(color.FgYellow).SprintFunc()
 	for _, repository := range repositories {

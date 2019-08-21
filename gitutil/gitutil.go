@@ -44,15 +44,27 @@ func ExecuteGitCommand(directoryName string, args ...string) []byte {
 	out, err := cmd.Output()
 	if err != nil {
 		red := color.New(color.FgRed).SprintFunc()
-		log.Println()
 		log.Printf("%s - %s : %s", red("Error"), directoryName, string(out))
 		log.Fatal(err)
 	}
 	return out
 }
 
-func FetchAllBranches(directoryName string) {
-	ExecuteGitCommand(directoryName, "fetch", "--all")
+func ExecuteGitCommandWithoutExit(directoryName string, args ...string) ([]byte, error) {
+	cmd := exec.Command("git", args...)
+	cmd.Dir = "./" + directoryName
+	out, err := cmd.Output()
+	if err != nil {
+		red := color.New(color.FgRed).SprintFunc()
+		log.Printf("%s - %s : %s, %s", red("Error"), directoryName, strings.TrimSpace(string(out)), err)
+		return nil, err
+	}
+	return out, nil
+}
+
+func FetchAllBranches(directoryName string) error {
+	_, err := ExecuteGitCommandWithoutExit(directoryName, "fetch", "--all")
+	return err
 }
 
 func GetCurrentBranch(directoryName string) string {
