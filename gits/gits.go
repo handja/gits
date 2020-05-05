@@ -16,7 +16,7 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("expected 'pull' or 'status' subcommands")
+		fmt.Println("expected 'pull', 'status' or 'help' subcommands")
 		os.Exit(1)
 	}
 	pullCmd := flag.NewFlagSet("pull", flag.ExitOnError)
@@ -42,7 +42,7 @@ func main() {
 		fmt.Println()
 		gitmessage.DisplayPocpocMessage()
 	default:
-		fmt.Println("expected 'pull' or 'status' subcommands")
+		fmt.Println("Run 'gits help' for usage.")
 		os.Exit(1)
 	}
 }
@@ -65,8 +65,6 @@ func executeAsynchronousGitsCommand(gitsCommandType GitsCommandType) {
 		gitpull.PullAllBranchesWithoutFetch(gitDirectories, &wg)
 	}
 	color.Green("Done")
-	fmt.Println("Press Enter to exit...")
-	fmt.Scanln()
 }
 
 type GitsCommandType int
@@ -84,3 +82,5 @@ func (g GitsCommandType) String() string {
 // git pull on a specified branch
 // add verbose option to display all directories
 // switch to a specific branch
+// limit the routine number
+// Add an option to avoid asynchronism
